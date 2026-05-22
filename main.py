@@ -97,4 +97,18 @@ def create_patient(patient: Patient):
 
 @app.put('/edit/{patient_id}')
 def update_patient(patient_id: str, patient_update: PatientUpdate):
-    
+    data=load_data()
+    if patient_id not in data:
+        raise HTTPException(status_code=404,detail='Patient id not found')
+    existing_info = data[patient_id]
+    updated_patient_info = patient_update.model_dump(exclude_unset=True)
+
+    for key,value in updated_patient_info.items():
+        existing_info[key] = value
+
+    existing_info['id']=patient_id
+    temp = Patient(**existing_info)
+    temp2 = temp.model_dump(exclude=['id'])
+    data[patient_id] = temp2
+    save_data(data)
+    return JSONResponse(status_code=201,content={'message':'Patient updated'})
