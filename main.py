@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel,Field,computed_field
 from typing import Literal,Annotated
 import pickle
@@ -62,7 +63,7 @@ class UserInput(BaseModel):
     
     @computed_field
     @property
-    def city_tier(self) -> str:
+    def city_tier(self) -> int:
         if self.city in tier_1_cities:
             return 1
         elif self.city in tier_2_cities:
@@ -70,3 +71,16 @@ class UserInput(BaseModel):
         else:
             return 3
      
+@app.post("/predict")
+def predict_premium(data: UserInput):
+    input_df = pd.DataFrame([{
+        'bmi':data.bmi,
+        'age_group':data.age_group,
+        'lifestyle_risk':data.lifestyle_risk,
+        'city_tier':data.city_tier,
+        'income_lpa':data.income_lpa,
+        'occupation':data.occupation
+    }])
+
+    prediction = model.predict(input_df)
+    return JSONResponse(status_code=200,content={'Predicted category:':prediction[0]})
