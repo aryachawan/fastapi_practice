@@ -82,5 +82,5 @@ def predict_premium(data: UserInput):
         'occupation':data.occupation
     }])
 
-    prediction = model.predict(input_df)
-    return JSONResponse(status_code=200,content={'Predicted category:':prediction[0]})
+    prediction = model.predict(input_df)[0]
+    return JSONResponse(status_code=200,content={'predicted_category': prediction})
